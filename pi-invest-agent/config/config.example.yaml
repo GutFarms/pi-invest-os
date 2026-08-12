@@ -1,0 +1,106 @@
+agent:
+  name: pi-income-agent
+  # paper | live  (live also requires ALLOW_LIVE_TRADING=true in .env)
+  mode: paper
+  # Use built-in simulator quotes when network/Yahoo is unavailable
+  allow_simulator_fallback: true
+
+universe:
+  # Only these symbols may be traded
+  - SCHD
+  - VYM
+  - JEPI
+  - QQQ
+  - SPY
+  - BND
+  - GLD
+  - AAPL
+  - MSFT
+  - NVDA
+
+risk:
+  max_position_pct: 0.15       # 15% of equity per symbol
+  max_daily_loss_pct: 0.03     # halt trading after -3% day
+  cash_reserve_pct: 0.10       # keep 10% cash
+  max_open_positions: 6
+  min_confidence: 0.55         # ignore weak signals
+  min_trade_notional: 25.0     # USD
+
+# Investment guard (Alinia-inspired): block reckless / hallucinated AI trades
+guard:
+  enabled: true
+  require_score_agreement: true   # LLM buys need heuristic agreement (or very high proxy)
+  agreement_bypass_proxy: 0.62
+  min_buy_income_proxy: 0.48      # selectivity → better expected income
+  max_sell_income_proxy: 0.42     # don't dump healthy income names
+  max_confidence_above_composite: 0.12
+  prefer_income_etfs: true
+  income_etf_boost: 0.02
+  max_buy_intents: 4              # concentrate capital
+  drawdown_throttle_pct: 0.04     # halve buys after 4% NAV DD
+  drawdown_halt_buys_pct: 0.08    # stop new buys after 8% DD
+  audit_intents: true
+
+broker:
+  backend: paper               # paper | alpaca
+  starting_cash: 10000.0
+
+market:
+  lookback_days: 60
+  provider: yahoo              # yahoo | simulator
+
+llm:
+  provider: none               # none | ollama | openai
+  # When provider=none, heuristic scoring alone decides
+  temperature: 0.2
+  timeout_seconds: 45
+
+schedule:
+  interval_minutes: 60
+  # US equity hours hint (agent still runs, but marks market_open)
+  market_tz: America/New_York
+  prefer_market_hours: true
+
+dashboard:
+  # Prefer localhost + Tailscale/SSH; set 0.0.0.0 only if you need LAN bind
+  host: 127.0.0.1
+  port: 8787
+  require_auth: true           # set DASHBOARD_PASSWORD in .env
+
+alerts:
+  enabled: true
+  drawdown_alert_pct: 0.05     # ntfy when NAV drawdown reaches 5% (needs NTFY_TOPIC)
+
+wallet:
+  backend: paper                 # paper | coinbase
+  # For coinbase: set COINBASE_API_KEY + COINBASE_API_SECRET (ECDSA PEM).
+  # Live sends also need ALLOW_LIVE_TRANSFERS=true.
+  assets: [USD, USDC, BTC, ETH]
+  starting_balances:
+    USD: 1000.0
+    USDC: 0.0
+    BTC: 0.0
+    ETH: 0.0
+  networks:
+    USD: ach-sim
+    USDC: ethereum
+    BTC: bitcoin
+    ETH: ethereum
+  min_send:
+    USD: 1.0
+    USDC: 1.0
+    BTC: 0.0001
+    ETH: 0.001
+  send_fee:
+    USD: 0.0
+    USDC: 0.0
+    BTC: 0.00001
+    ETH: 0.0002
+  max_daily_send_usd: 250.0      # hard outbound send cap per UTC day
+  allowlist_required: true       # block sends until destinations are allowlisted
+  allowlist_bootstrap: []        # optional seed destinations
+  require_send_confirmation: true  # must type "SEND <amount> <ASSET>"
+
+safety:
+  journal_enabled: true
+  audit_enabled: true

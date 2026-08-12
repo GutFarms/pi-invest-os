@@ -1,0 +1,17 @@
+[Unit]
+Description=Pi Invest Agent — autonomous income trader
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/Japan-central/pi-invest-agent
+Environment=PYTHONUNBUFFERED=1
+EnvironmentFile=-/home/pi/Japan-central/pi-invest-agent/.env
+ExecStart=/home/pi/Japan-central/pi-invest-agent/.venv/bin/pi-invest run
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

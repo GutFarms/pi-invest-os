@@ -1,0 +1,17 @@
+[Unit]
+Description=Pi Invest Agent dashboard
+After=network-online.target pi-invest.service pi-invest-firstboot.service
+ConditionPathExists=/var/lib/pi-invest/firstboot-done
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/opt/pi-invest-agent
+Environment=PYTHONUNBUFFERED=1
+EnvironmentFile=-/opt/pi-invest-agent/.env
+ExecStart=/opt/pi-invest-agent/.venv/bin/pi-invest dashboard
+Restart=on-failure
+RestartSec=20
+
+[Install]
+WantedBy=multi-user.target

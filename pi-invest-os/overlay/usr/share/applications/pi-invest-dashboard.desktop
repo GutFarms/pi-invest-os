@@ -1,0 +1,15 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Pi Invest
+GenericName=Local AI Investment Agent
+Comment=On-device income agent — opens as a local app on this Pi
+Exec=/usr/local/bin/pi-invest-dashboard
+TryExec=/usr/local/bin/pi-invest-dashboard
+Icon=utilities-system-monitor
+Terminal=false
+Categories=Finance;Office;Utility;
+Keywords=invest;pi;trading;wallet;ollama;local;
+StartupNotify=true
+StartupWMClass=PiInvest
+X-GNOME-UsesNotifications=false

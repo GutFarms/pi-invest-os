@@ -1,0 +1,15 @@
+target/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+config/config.yaml
+/data/
+*.db
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+dist/
+build/

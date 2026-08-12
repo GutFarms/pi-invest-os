@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pi Invest</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+  <style>
+    :root {
+      --bg0: #07110d;
+      --bg1: #0c1a14;
+      --ink: #eef6ef;
+      --muted: #8aa392;
+      --accent: #c6e07a;
+      --accent-deep: #7db86a;
+      --gold: #e2b35a;
+      --danger: #e06a62;
+      --line: rgba(198, 224, 122, 0.16);
+      --glass: rgba(12, 28, 20, 0.55);
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      color: var(--ink);
+      font-family: "Sora", "Segoe UI", sans-serif;
+      background: var(--bg0);
+      overflow-x: hidden;
+    }
+
+    .stage {
+      position: relative;
+      min-height: 100vh;
+      padding: clamp(1.1rem, 3vw, 2.4rem);
+      isolation: isolate;
+    }
+    .stage::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      background:
+        radial-gradient(ellipse 90% 60% at 12% -10%, rgba(125, 184, 106, 0.28), transparent 55%),
+        radial-gradient(ellipse 70% 50% at 95% 8%, rgba(226, 179, 90, 0.18), transparent 50%),
+        radial-gradient(ellipse 60% 45% at 70% 100%, rgba(60, 110, 90, 0.22), transparent 55%),
+        linear-gradient(165deg, #0a1611 0%, #07110d 45%, #0b1518 100%);
+    }
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(40px);
+      opacity: 0.45;
+      z-index: -1;
+      animation: drift 18s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+    .orb.a { width: 42vw; height: 42vw; max-width: 520px; max-height: 520px; left: -8%; top: 8%; background: #24543a; }
+    .orb.b { width: 36vw; height: 36vw; max-width: 420px; max-height: 420px; right: -6%; top: 28%; background: #5a4a22; animation-delay: -6s; }
+    .orb.c { width: 30vw; height: 30vw; max-width: 360px; max-height: 360px; left: 35%; bottom: -10%; background: #1a3d45; animation-delay: -11s; }
+    @keyframes drift {
+      from { transform: translate3d(0, 0, 0) scale(1); }
+      to { transform: translate3d(3%, -4%, 0) scale(1.08); }
+    }
+    .grain {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.07;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    .shell { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; }
+
+    .hero {
+      display: grid;
+      gap: clamp(1.2rem, 3vw, 2rem);
+      grid-template-columns: 1.2fr 0.8fr;
+      align-items: end;
+      min-height: min(72vh, 720px);
+      padding-bottom: 0.5rem;
+      animation: rise 0.9s ease both;
+    }
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; min-height: auto; }
+    }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    .brand {
+      font-family: "Instrument Serif", Georgia, serif;
+      font-size: clamp(3.4rem, 10vw, 7.2rem);
+      line-height: 0.9;
+      letter-spacing: -0.03em;
+      margin: 0;
+      text-shadow: 0 0 40px rgba(198, 224, 122, 0.18);
+    }
+    .brand em {
+      font-style: italic;
+      color: var(--accent);
+      display: inline-block;
+      animation: glow 3.6s ease-in-out infinite;
+    }
+    @keyframes glow {
+      0%, 100% { text-shadow: 0 0 0 transparent; }
+      50% { text-shadow: 0 0 28px rgba(198, 224, 122, 0.45); }
+    }
+    .tagline {
+      margin: 1rem 0 0;
+      max-width: 28rem;
+      color: var(--muted);
+      font-size: clamp(0.95rem, 2vw, 1.1rem);
+      line-height: 1.45;
+    }
+    .pills { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-top: 1.1rem; }
+    .pill {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      border: 1px solid var(--line);
+      background: rgba(8, 20, 14, 0.55);
+      backdrop-filter: blur(10px);
+      padding: 0.28rem 0.7rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    .pill.danger { color: var(--danger); border-color: rgba(224, 106, 98, 0.4); }
+    .pill .dot {
+      width: 0.45rem; height: 0.45rem; border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 10px currentColor;
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.45; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.15); }
+    }
+
+    .hero-metric {
+      border: 1px solid var(--line);
+      background: linear-gradient(160deg, rgba(20, 40, 28, 0.75), rgba(8, 16, 12, 0.65));
+      box-shadow: var(--shadow);
+      padding: clamp(1.2rem, 3vw, 1.8rem);
+      position: relative;
+      overflow: hidden;
+      animation: rise 1.05s ease both 0.1s;
+    }
+    .hero-metric::after {
+      content: "";
+      position: absolute; inset: auto -20% -40% auto;
+      width: 70%; height: 70%;
+      background: radial-gradient(circle, rgba(198, 224, 122, 0.18), transparent 70%);
+      pointer-events: none;
+    }
+    .hero-metric .label {
+      color: var(--muted);
+      font-size: 0.75rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    .hero-metric .nav {
+      font-family: "Instrument Serif", Georgia, serif;
+      font-size: clamp(2.6rem, 7vw, 4.4rem);
+      margin: 0.35rem 0 0.2rem;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+    }
+    .hero-metric .meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-top: 1.1rem;
+    }
+    .hero-metric .meta div {
+      border-top: 1px solid var(--line);
+      padding-top: 0.65rem;
+    }
+    .hero-metric .meta span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .hero-metric .meta strong {
+      display: block;
+      margin-top: 0.2rem;
+      font-size: 1.05rem;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+    .hint {
+      margin: 0.85rem 0 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.4;
+    }
+
+    .viz {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: 1.4fr 0.9fr;
+      margin: 1.6rem 0 0.5rem;
+      animation: rise 1.1s ease both 0.18s;
+    }
+    @media (max-width: 900px) { .viz { grid-template-columns: 1fr; } }
+    .viz-panel {
+      border: 1px solid var(--line);
+      background: var(--glass);
+      backdrop-filter: blur(14px);
+      padding: 1rem 1rem 0.85rem;
+      box-shadow: var(--shadow);
+    }
+    .viz-panel h2 {
+      margin: 0 0 0.7rem;
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+    .chart-wrap { position: relative; }
+    canvas.chart { width: 100%; height: 240px; display: block; }
+    canvas.ring { width: 100%; height: 260px; display: block; }
+
+    .hold-visual { margin-top: 1.4rem; animation: rise 1.15s ease both 0.25s; }
+    .hold-visual h2 {
+      margin: 0 0 0.8rem;
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+    .bar-row {
+      display: grid;
+      grid-template-columns: 4.5rem 1fr 5.5rem;
+      gap: 0.7rem;
+      align-items: center;
+      margin-bottom: 0.55rem;
+      font-size: 0.9rem;
+    }
+    .bar-track {
+      height: 0.55rem;
+      background: rgba(255,255,255,0.06);
+      overflow: hidden;
+      position: relative;
+    }
+    .bar-fill {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, var(--accent-deep), var(--accent), var(--gold));
+      box-shadow: 0 0 16px rgba(198, 224, 122, 0.35);
+      transition: width 0.9s cubic-bezier(.2,.8,.2,1);
+    }
+    .bar-row .sym { font-weight: 600; letter-spacing: 0.04em; }
+    .bar-row .val { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+
+    section.block {
+      margin-top: 2rem;
+      animation: rise 1.2s ease both 0.3s;
+    }
+    section.block > h2 {
+      margin: 0 0 0.75rem;
+      font-family: "Instrument Serif", Georgia, serif;
+      font-size: 1.55rem;
+      font-weight: 400;
+      color: var(--ink);
+    }
+    .actions { display: flex; flex-wrap: wrap; gap: 0.55rem; }
+    button {
+      appearance: none;
+      border: 0;
+      cursor: pointer;
+      min-height: 46px;
+      padding: 0.75rem 1.15rem;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 0.92rem;
+      background: linear-gradient(135deg, var(--accent), #a8cf6d);
+      color: #0c120e;
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+    button:hover { filter: brightness(1.05); transform: translateY(-1px); }
+    button.danger {
+      background: linear-gradient(135deg, #d96a62, #b84a45);
+      color: #fff;
+    }
+    button.secondary {
+      background: transparent;
+      color: var(--accent);
+      border: 1px solid var(--line);
+    }
+
+    .forms {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+    .form {
+      border: 1px solid var(--line);
+      background: var(--glass);
+      backdrop-filter: blur(12px);
+      padding: 1rem;
+    }
+    .form h3 { margin: 0 0 0.6rem; font-size: 0.95rem; }
+    label {
+      display: block;
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin: 0.55rem 0 0.25rem;
+    }
+    input, select {
+      width: 100%;
+      background: rgba(5, 12, 9, 0.8);
+      border: 1px solid rgba(198, 224, 122, 0.2);
+      color: var(--ink);
+      padding: 0.65rem 0.7rem;
+      font: inherit;
+      font-size: 1rem;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+    th, td {
+      text-align: left;
+      padding: 0.55rem 0.35rem;
+      border-bottom: 1px solid rgba(198, 224, 122, 0.1);
+    }
+    th {
+      color: var(--muted);
+      font-weight: 500;
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .muted { color: var(--muted); }
+    code { font-size: 0.8rem; word-break: break-all; color: #d5e8c8; }
+    .qr-grid {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    }
+    .qr-card {
+      text-align: center;
+      border: 1px solid var(--line);
+      padding: 0.9rem;
+      background: rgba(8, 18, 13, 0.7);
+    }
+    .qr-card img { margin: 0.45rem auto; background: #fff; padding: 0.4rem; }
+    .row-actions button { margin-top: 0.2rem; padding: 0.4rem 0.65rem; min-height: 36px; font-size: 0.85rem; }
+    #err { color: var(--danger); margin-top: 1rem; white-space: pre-wrap; }
+    #ok { color: var(--accent); margin-top: 0.75rem; }
+    .foot {
+      margin-top: 2.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+    }
+  </style>
+</head>
+<body>
+  <div class="orb a"></div>
+  <div class="orb b"></div>
+  <div class="orb c"></div>
+  <div class="grain"></div>
+
+  <div class="stage">
+    <div class="shell">
+      <header class="hero">
+        <div>
+          <h1 class="brand">Pi <em>Invest</em></h1>
+          <p class="tagline">On-device income agent — local AI, paper-safe by default, built for the Pi display.</p>
+          <div class="pills">
+            <span id="mode" class="pill">…</span>
+            <span id="localpill" class="pill" style="display:none">LOCAL AI</span>
+            <span id="ollamapill" class="pill" style="display:none">…</span>
+            <span id="haltpill" class="pill"><span class="dot"></span><span class="txt">…</span></span>
+            <span id="rolepill" class="pill">…</span>
+          </div>
+          <p class="hint" id="ai-hint" style="display:none"></p>
+        </div>
+        <div class="hero-metric">
+          <div class="label">Total NAV</div>
+          <div class="nav" id="nav">—</div>
+          <div class="meta">
+            <div><span>Equity</span><strong id="equity">—</strong></div>
+            <div><span>Wallet ~USD</span><strong id="walletusd">—</strong></div>
+            <div><span>Max drawdown</span><strong id="dd">—</strong></div>
+            <div><span>Day PnL</span><strong id="daypnl">—</strong></div>
+          </div>
+        </div>
+      </header>
+
+      <div class="viz">
+        <div class="viz-panel">
+          <h2>NAV trajectory</h2>
+          <div class="chart-wrap"><canvas class="chart" id="nav-chart" width="920" height="240"></canvas></div>
+        </div>
+        <div class="viz-panel">
+          <h2>Portfolio mix</h2>
+          <div class="chart-wrap"><canvas class="ring" id="alloc-chart" width="420" height="260"></canvas></div>
+        </div>
+      </div>
+
+      <div class="hold-visual">
+        <h2>Holdings weight</h2>
+        <div id="hold-bars"></div>
+      </div>
+
+      <section class="block" id="admin-controls">
+        <h2>Safety</h2>
+        <div class="actions">
+          <button id="halt-btn" class="danger">Halt trading + sends</button>
+          <button id="resume-btn" class="secondary">Resume</button>
+          <button id="cycle" class="secondary">Run invest cycle</button>
+        </div>
+        <p class="muted" id="halt-reason"></p>
+      </section>
+      <p class="muted" id="viewer-note" style="display:none">Read-only session — halt, send, and allowlist edits require the admin user.</p>
+
+      <section class="block">
+        <h2>Receive</h2>
+        <div class="qr-grid" id="qr-grid"></div>
+      </section>
+
+      <section class="block" id="admin-send">
+        <h2>Send wizard</h2>
+        <div class="forms">
+          <div class="form">
+            <h3>1. Destination must be allowlisted</h3>
+            <label>Asset</label><select id="send-asset"></select>
+            <label>Amount</label><input id="send-amount" type="number" step="any" />
+            <label>To (allowlisted only)</label>
+            <select id="send-to"></select>
+            <label>Memo</label><input id="send-memo" />
+            <p class="hint" id="confirm-hint">Confirmation phrase will appear here</p>
+            <label>Type confirmation exactly</label>
+            <input id="send-confirm" placeholder="SEND 25.00 USD" autocomplete="off" />
+            <button id="send-btn">Confirm &amp; send</button>
+          </div>
+          <div class="form">
+            <h3>Allowlist</h3>
+            <label>New destination</label>
+            <input id="allow-dest" placeholder="email, BTC address, usd:…" />
+            <label>Label</label>
+            <input id="allow-label" placeholder="optional" />
+            <button id="allow-add">Add to allowlist</button>
+            <table style="margin-top:0.75rem">
+              <thead><tr><th>Destination</th><th></th></tr></thead>
+              <tbody id="allow-rows"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="block" id="viewer-allowlist" style="display:none">
+        <h2>Allowlist</h2>
+        <table>
+          <thead><tr><th>Destination</th><th>Label</th></tr></thead>
+          <tbody id="allow-rows-ro"></tbody>
+        </table>
+      </section>
+
+      <section class="block">
+        <h2>Wallet</h2>
+        <table>
+          <thead><tr><th>Asset</th><th>Amount</th><th>~USD</th><th>Receive</th></tr></thead>
+          <tbody id="wallet"></tbody>
+        </table>
+      </section>
+
+      <section class="block">
+        <h2>Positions</h2>
+        <table>
+          <thead><tr><th>Symbol</th><th>Qty</th><th>Value</th><th>uPnL</th></tr></thead>
+          <tbody id="positions"></tbody>
+        </table>
+      </section>
+
+      <section class="block">
+        <h2>Audit</h2>
+        <table>
+          <thead><tr><th>When</th><th>Kind</th><th>Detail</th></tr></thead>
+          <tbody id="audit"></tbody>
+        </table>
+      </section>
+
+      <div id="ok"></div>
+      <div id="err"></div>
+      <p class="foot">Pi Invest · local graphic display · refreshes every 15s</p>
+    </div>
+  </div>
+
+  <script>
+    const fmt = (n) => Number(n).toLocaleString(undefined, {style:'currency', currency:'USD'});
+    const amt = (n, asset) => (asset === 'USD' || asset === 'USDC')
+      ? Number(n).toFixed(2) : Number(n).toPrecision(6);
+    const PALETTE = ['#c6e07a', '#e2b35a', '#7db86a', '#6ec8c0', '#d4a27f', '#9bb8ff', '#f0d78c', '#86a873'];
+
+    function phrase(asset, amount) {
+      let a;
+      if (asset === 'USD' || asset === 'USDC' || asset === 'USDT') a = Number(amount).toFixed(2);
+      else a = Number(amount).toFixed(8).replace(/\\.?0+$/, '');
+      return `SEND ${a} ${asset}`;
+    }
+
+    function resizeCanvas(canvas, cssH) {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const rect = canvas.getBoundingClientRect();
+      const w = Math.max(280, Math.floor(rect.width));
+      const h = cssH || Math.floor(rect.height) || 240;
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      canvas.style.height = h + 'px';
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return { ctx, w, h };
+    }
+
+    function drawNav(rows) {
+      const canvas = document.getElementById('nav-chart');
+      const { ctx, w, h } = resizeCanvas(canvas, 240);
+      ctx.clearRect(0, 0, w, h);
+      const pts = (rows || []).slice().reverse();
+      if (pts.length < 2) {
+        ctx.fillStyle = '#8aa392';
+        ctx.font = '14px Sora, sans-serif';
+        ctx.fillText('Run a few cycles to build the NAV curve', 18, h / 2);
+        return;
+      }
+      const vals = pts.map(p => p.total_nav);
+      const min = Math.min(...vals), max = Math.max(...vals);
+      const span = Math.max(max - min, 1);
+      const padX = 8, padY = 22;
+      const xy = (i, v) => {
+        const x = padX + (i / (pts.length - 1)) * (w - padX * 2);
+        const y = h - padY - ((v - min) / span) * (h - padY * 1.6);
+        return [x, y];
+      };
+
+      // grid
+      ctx.strokeStyle = 'rgba(198,224,122,0.08)';
+      ctx.lineWidth = 1;
+      for (let g = 0; g < 4; g++) {
+        const y = padY + g * ((h - padY * 1.6) / 3);
+        ctx.beginPath(); ctx.moveTo(padX, y); ctx.lineTo(w - padX, y); ctx.stroke();
+      }
+
+      const grad = ctx.createLinearGradient(0, padY, 0, h);
+      grad.addColorStop(0, 'rgba(198,224,122,0.35)');
+      grad.addColorStop(1, 'rgba(198,224,122,0)');
+
+      ctx.beginPath();
+      pts.forEach((p, i) => {
+        const [x, y] = xy(i, p.total_nav);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.strokeStyle = '#c6e07a';
+      ctx.lineWidth = 2.5;
+      ctx.lineJoin = 'round';
+      ctx.shadowColor = 'rgba(198,224,122,0.45)';
+      ctx.shadowBlur = 12;
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      const [lx, ly] = xy(pts.length - 1, vals[vals.length - 1]);
+      ctx.lineTo(lx, h - 4);
+      ctx.lineTo(padX, h - 4);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(lx, ly, 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#e2b35a';
+      ctx.fill();
+
+      ctx.fillStyle = '#eef6ef';
+      ctx.font = '600 13px Sora, sans-serif';
+      ctx.fillText(fmt(vals[vals.length - 1]), 12, 18);
+      ctx.fillStyle = '#8aa392';
+      ctx.font = '12px Sora, sans-serif';
+      ctx.fillText(`${pts.length} pts`, w - 64, 18);
+    }
+
+    function drawAlloc(positions, cash) {
+      const canvas = document.getElementById('alloc-chart');
+      const { ctx, w, h } = resizeCanvas(canvas, 260);
+      ctx.clearRect(0, 0, w, h);
+      const parts = (positions || []).map(p => ({
+        label: p.symbol,
+        value: Math.max(0, Number(p.market_value) || 0)
+      })).filter(p => p.value > 0);
+      const cashV = Math.max(0, Number(cash) || 0);
+      if (cashV > 0) parts.push({ label: 'CASH', value: cashV });
+      const total = parts.reduce((s, p) => s + p.value, 0);
+      const cx = w * 0.38, cy = h * 0.52, r = Math.min(w, h) * 0.32;
+      if (total <= 0) {
+        ctx.fillStyle = '#8aa392';
+        ctx.font = '14px Sora, sans-serif';
+        ctx.fillText('No holdings yet', 24, h / 2);
+        return;
+      }
+      let angle = -Math.PI / 2;
+      parts.forEach((p, i) => {
+        const slice = (p.value / total) * Math.PI * 2;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, r, angle, angle + slice);
+        ctx.closePath();
+        ctx.fillStyle = PALETTE[i % PALETTE.length];
+        ctx.globalAlpha = 0.92;
+        ctx.fill();
+        angle += slice;
+      });
+      ctx.globalAlpha = 1;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r * 0.58, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(7,17,13,0.92)';
+      ctx.fill();
+      ctx.fillStyle = '#eef6ef';
+      ctx.font = '600 15px Sora, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(fmt(total), cx, cy - 2);
+      ctx.fillStyle = '#8aa392';
+      ctx.font = '11px Sora, sans-serif';
+      ctx.fillText('deployed', cx, cy + 16);
+      ctx.textAlign = 'left';
+
+      let ly = 28;
+      parts.slice(0, 7).forEach((p, i) => {
+        const pct = (p.value / total) * 100;
+        ctx.fillStyle = PALETTE[i % PALETTE.length];
+        ctx.fillRect(w * 0.68, ly - 8, 10, 10);
+        ctx.fillStyle = '#eef6ef';
+        ctx.font = '12px Sora, sans-serif';
+        ctx.fillText(`${p.label}  ${pct.toFixed(0)}%`, w * 0.68 + 16, ly);
+        ly += 22;
+      });
+    }
+
+    function drawBars(positions, equity) {
+      const el = document.getElementById('hold-bars');
+      const eq = Math.max(Number(equity) || 0, 1);
+      const rows = (positions || []).slice().sort((a, b) => b.market_value - a.market_value);
+      if (!rows.length) {
+        el.innerHTML = '<p class="muted">No open positions — run a cycle to allocate.</p>';
+        return;
+      }
+      el.innerHTML = rows.map(p => {
+        const pct = Math.min(100, (p.market_value / eq) * 100);
+        const pnl = Number(p.unrealized_pnl) || 0;
+        const col = pnl >= 0 ? 'var(--accent)' : 'var(--danger)';
+        return `<div class="bar-row">
+          <div class="sym">${p.symbol}</div>
+          <div class="bar-track"><div class="bar-fill" data-w="${pct}"></div></div>
+          <div class="val" style="color:${col}">${fmt(p.market_value)}</div>
+        </div>`;
+      }).join('');
+      requestAnimationFrame(() => {
+        el.querySelectorAll('.bar-fill').forEach(n => { n.style.width = n.dataset.w + '%'; });
+      });
+    }
+
+    function qrDataUrl(text) {
+      if (!window.qrcode) return '';
+      const qr = qrcode(0, 'M');
+      qr.addData(text);
+      qr.make();
+      return qr.createDataURL(6, 2);
+    }
+
+    function fillAssets(assets) {
+      const el = document.getElementById('send-asset');
+      const cur = el.value;
+      el.innerHTML = assets.map(a => `<option value="${a}">${a}</option>`).join('');
+      if (assets.includes(cur)) el.value = cur;
+    }
+
+    function fillDestinations(list) {
+      const el = document.getElementById('send-to');
+      const cur = el.value;
+      el.innerHTML = (list || []).map(r =>
+        `<option value="${r.destination}">${r.label ? r.label + ' — ' : ''}${r.destination}</option>`
+      ).join('') || '<option value="">(add allowlist entries first)</option>';
+      if ([...el.options].some(o => o.value === cur)) el.value = cur;
+    }
+
+    function updateConfirmHint() {
+      const asset = document.getElementById('send-asset').value;
+      const amount = document.getElementById('send-amount').value;
+      const hint = document.getElementById('confirm-hint');
+      if (!asset || !amount) { hint.textContent = 'Enter asset + amount to see the required phrase'; return; }
+      hint.textContent = `Type exactly: ${phrase(asset, amount)}`;
+    }
+
+    async function refresh() {
+      const r = await fetch('/api/status');
+      const d = await r.json();
+      const role = d.role || 'admin';
+      const isAdmin = role === 'admin';
+      document.getElementById('admin-controls').style.display = isAdmin ? '' : 'none';
+      document.getElementById('admin-send').style.display = isAdmin ? '' : 'none';
+      document.getElementById('viewer-note').style.display = isAdmin ? 'none' : '';
+      document.getElementById('viewer-allowlist').style.display = isAdmin ? 'none' : '';
+      document.getElementById('rolepill').textContent = role.toUpperCase();
+      const llm = d.llm || {};
+      document.getElementById('mode').textContent =
+        `${d.mode} / ${d.backend} · wallet ${d.wallet.backend}` +
+        (llm.provider ? ` · ${llm.provider}` : '');
+      const lp = document.getElementById('localpill');
+      const op = document.getElementById('ollamapill');
+      const hint = document.getElementById('ai-hint');
+      if (d.local_only) {
+        lp.style.display = '';
+        lp.textContent = llm.model ? `LOCAL AI · ${llm.model}` : 'LOCAL AI';
+      } else {
+        lp.style.display = 'none';
+      }
+      if (llm.provider === 'ollama') {
+        op.style.display = '';
+        const ok = d.ollama && d.ollama.ok;
+        op.textContent = ok ? 'OLLAMA UP' : 'OLLAMA DOWN';
+        op.className = ok ? 'pill' : 'pill danger';
+        hint.style.display = '';
+        hint.textContent = ok
+          ? 'Dashboard UI on :8787 · Ollama API on :11434 (not a web page).'
+          : 'Ollama is not reachable. On the Pi: sudo systemctl start ollama && sudo pi-invest-setup-local-ai.sh';
+      } else {
+        op.style.display = 'none';
+        hint.style.display = 'none';
+      }
+      const hp = document.getElementById('haltpill');
+      hp.className = d.halted ? 'pill danger' : 'pill';
+      hp.querySelector('.txt').textContent = d.halted ? 'HALTED' : 'LIVE';
+      document.getElementById('halt-reason').textContent = d.halt_reason || '';
+      document.getElementById('equity').textContent = fmt(d.account.equity);
+      const nav = d.journal.latest_nav || (d.account.equity + d.wallet.total_usd_estimate);
+      document.getElementById('nav').textContent = fmt(nav);
+      document.getElementById('dd').textContent =
+        `${((d.journal.max_drawdown_pct || 0) * 100).toFixed(2)}%`;
+      document.getElementById('walletusd').textContent = fmt(d.wallet.total_usd_estimate);
+      const day = d.account.day_pnl || 0;
+      const dayEl = document.getElementById('daypnl');
+      dayEl.textContent = `${fmt(day)} (${((d.account.day_pnl_pct || 0) * 100).toFixed(2)}%)`;
+      dayEl.style.color = day >= 0 ? 'var(--accent)' : 'var(--danger)';
+      if (isAdmin) {
+        fillAssets(d.wallet.balances.map(b => b.asset));
+        fillDestinations(d.allowlist || []);
+      }
+      drawNav(d.journal_rows || []);
+      drawAlloc(d.account.positions || [], d.account.cash || 0);
+      drawBars(d.account.positions || [], d.account.equity || 0);
+
+      document.getElementById('wallet').innerHTML = d.wallet.balances.map(b => {
+        const addr = (d.wallet.addresses[b.asset] || {}).address || '—';
+        return `<tr><td>${b.asset}</td><td>${amt(b.amount, b.asset)}</td>
+          <td>${fmt(b.amount * (b.usd_mark || 0))}</td><td><code>${addr}</code></td></tr>`;
+      }).join('') || '<tr><td colspan=4 class="muted">Empty</td></tr>';
+
+      document.getElementById('positions').innerHTML = d.account.positions.map(p =>
+        `<tr><td>${p.symbol}</td><td>${p.qty.toFixed(4)}</td>
+         <td>${fmt(p.market_value)}</td><td>${fmt(p.unrealized_pnl)}</td></tr>`
+      ).join('') || '<tr><td colspan=4 class="muted">No positions</td></tr>';
+
+      if (isAdmin) {
+        document.getElementById('allow-rows').innerHTML = (d.allowlist || []).map(r =>
+          `<tr><td><code>${r.destination}</code>${r.label ? ' · ' + r.label : ''}</td>
+           <td class="row-actions"><button data-rm="${r.destination}" class="secondary allow-rm">Remove</button></td></tr>`
+        ).join('') || '<tr><td colspan=2 class="muted">Empty — sends blocked until you add destinations</td></tr>';
+        document.querySelectorAll('.allow-rm').forEach(btn => {
+          btn.onclick = async () => {
+            await post('/api/wallet/allowlist/remove', {destination: btn.dataset.rm});
+            await refresh();
+          };
+        });
+      } else {
+        document.getElementById('allow-rows-ro').innerHTML = (d.allowlist || []).map(r =>
+          `<tr><td><code>${r.destination}</code></td><td>${r.label || '—'}</td></tr>`
+        ).join('') || '<tr><td colspan=2 class="muted">Empty</td></tr>';
+      }
+
+      const qg = document.getElementById('qr-grid');
+      const addrs = d.wallet.addresses || {};
+      const cards = Object.keys(addrs).filter(a => a !== 'USD' && addrs[a].address);
+      qg.innerHTML = cards.map(asset => {
+        const address = addrs[asset].address;
+        const url = qrDataUrl(address);
+        return `<div class="qr-card"><strong>${asset}</strong><div>
+          ${url ? `<img alt="QR ${asset}" src="${url}" width="132" height="132" />` : ''}
+          </div><code>${address}</code></div>`;
+      }).join('') || '<p class="muted">No crypto receive addresses yet.</p>';
+
+      document.getElementById('audit').innerHTML = (d.audit || []).map(a =>
+        `<tr><td class="muted">${a.created_at}</td><td>${a.kind}</td><td>${a.detail}</td></tr>`
+      ).join('') || '<tr><td colspan=3 class="muted">No audit events</td></tr>';
+
+      if (isAdmin) updateConfirmHint();
+    }
+
+    async function post(url, body) {
+      document.getElementById('err').textContent = '';
+      document.getElementById('ok').textContent = '';
+      const r = await fetch(url, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: body ? JSON.stringify(body) : '{}'
+      });
+      if (!r.ok) throw new Error(await r.text());
+      return r.json();
+    }
+
+    document.getElementById('send-asset').onchange = updateConfirmHint;
+    document.getElementById('send-amount').oninput = updateConfirmHint;
+    document.getElementById('halt-btn').onclick = async () => {
+      try { await post('/api/halt', {reason: 'dashboard halt'}); await refresh(); }
+      catch (e) { document.getElementById('err').textContent = String(e); }
+    };
+    document.getElementById('resume-btn').onclick = async () => {
+      try { await post('/api/resume'); await refresh(); }
+      catch (e) { document.getElementById('err').textContent = String(e); }
+    };
+    document.getElementById('cycle').onclick = async () => {
+      try { await post('/api/cycle'); document.getElementById('ok').textContent = 'Cycle complete'; await refresh(); }
+      catch (e) { document.getElementById('err').textContent = String(e); }
+    };
+    document.getElementById('send-btn').onclick = async () => {
+      try {
+        const asset = document.getElementById('send-asset').value;
+        const amount = Number(document.getElementById('send-amount').value);
+        await post('/api/wallet/send', {
+          asset, amount,
+          to_address: document.getElementById('send-to').value,
+          memo: document.getElementById('send-memo').value,
+          confirm: document.getElementById('send-confirm').value
+        });
+        document.getElementById('ok').textContent = 'Send submitted';
+        document.getElementById('send-confirm').value = '';
+        await refresh();
+      } catch (e) { document.getElementById('err').textContent = String(e); }
+    };
+    document.getElementById('allow-add').onclick = async () => {
+      try {
+        await post('/api/wallet/allowlist/add', {
+          destination: document.getElementById('allow-dest').value,
+          label: document.getElementById('allow-label').value
+        });
+        document.getElementById('allow-dest').value = '';
+        document.getElementById('allow-label').value = '';
+        await refresh();
+      } catch (e) { document.getElementById('err').textContent = String(e); }
+    };
+
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(refresh, 180);
+    });
+
+    refresh();
+    setInterval(refresh, 15000);
+  </script>
+</body>
+</html>

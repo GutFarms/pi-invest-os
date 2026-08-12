@@ -1,0 +1,6 @@
+# Pi Invest OS — build artifacts (do not commit multi-GB images)
+.build/
+.cache/
+dist/*.img
+dist/*.img.xz
+dist/*.sha256

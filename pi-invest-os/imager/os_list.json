@@ -1,0 +1,45 @@
+{
+  "imager": {
+    "latest_version": "1.8.5",
+    "url": "https://www.raspberrypi.com/software/",
+    "devices": [
+      {
+        "name": "Raspberry Pi 5",
+        "tags": [
+          "pi5-64bit"
+        ],
+        "icon": "https://downloads.raspberrypi.com/imager/icons/RPi_5.png",
+        "description": "Raspberry Pi 5",
+        "matching_type": "exclusive"
+      },
+      {
+        "name": "Raspberry Pi 4",
+        "tags": [
+          "pi4-64bit"
+        ],
+        "icon": "https://downloads.raspberrypi.com/imager/icons/RPi_4.png",
+        "description": "Raspberry Pi 4 / 400",
+        "matching_type": "exclusive"
+      }
+    ]
+  },
+  "os_list": [
+    {
+      "name": "Pi Invest OS 0.5.0",
+      "description": "Local AI income agent — desktop app, Ollama, paper trading (Pi 5)",
+      "icon": "https://downloads.raspberrypi.com/raspios_lite_arm64/Raspberry_Pi_OS_Logo_256px.png",
+      "url": "https://github.com/GutFarms/Japan-central/releases/download/pi-invest-os-v0.5.0/pi-invest-os-0.5.0-arm64.img.xz",
+      "extract_size": 11567890432,
+      "extract_sha256": "712bb811a9e4e4adde56933177e5b3e341f1373330b36ae693a43ddd94d13a06",
+      "image_download_size": 526229700,
+      "image_download_sha256": "092363d4a3e450ecb5a2754cc9f848cab6f861aa57737ebddc7b4f4827bce451",
+      "release_date": "2026-08-10",
+      "devices": [
+        "pi5-64bit",
+        "pi4-64bit"
+      ],
+      "init_format": "cloudinit-rpi",
+      "website": "https://github.com/GutFarms/Japan-central/releases/tag/pi-invest-os-v0.5.0"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+[Unit]
+Description=Pi Invest OS first-boot provisioning
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=!/var/lib/pi-invest/firstboot-done
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/pi-invest-firstboot.sh
+RemainAfterExit=yes
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target

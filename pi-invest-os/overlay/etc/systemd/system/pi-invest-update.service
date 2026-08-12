@@ -1,0 +1,11 @@
+[Unit]
+Description=Pi Invest Agent auto-update (pull latest from GitHub)
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=/var/lib/pi-invest/firstboot-done
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/pi-invest-update.sh
+Nice=10
+IOSchedulingClass=idle

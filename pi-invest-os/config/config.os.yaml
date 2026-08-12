@@ -1,0 +1,101 @@
+# Pi Invest OS — fully local (no cloud required after first boot)
+agent:
+  name: pi-income-agent-local
+  mode: paper
+  allow_simulator_fallback: true
+
+universe:
+  - SCHD
+  - VYM
+  - JEPI
+  - QQQ
+  - SPY
+  - BND
+  - GLD
+  - AAPL
+  - MSFT
+  - NVDA
+
+risk:
+  max_position_pct: 0.15
+  max_daily_loss_pct: 0.03
+  cash_reserve_pct: 0.10
+  max_open_positions: 6
+  min_confidence: 0.55
+  min_trade_notional: 25.0
+
+# Alinia-style guard: AI intents must clear quantitative income scores
+guard:
+  enabled: true
+  require_score_agreement: true
+  min_buy_income_proxy: 0.48
+  max_sell_income_proxy: 0.42
+  prefer_income_etfs: true
+  max_buy_intents: 4
+  drawdown_throttle_pct: 0.04
+  drawdown_halt_buys_pct: 0.08
+  audit_intents: true
+
+broker:
+  backend: paper
+  starting_cash: 10000.0
+
+market:
+  lookback_days: 60
+  # simulator = fully offline on-device quotes (no Yahoo/cloud)
+  # switch to yahoo later if you want live public quotes with offline fallback
+  provider: simulator
+
+llm:
+  # Local AI via Ollama on this Pi (no OpenAI)
+  provider: ollama
+  temperature: 0.2
+  timeout_seconds: 120
+
+schedule:
+  interval_minutes: 60
+  market_tz: America/New_York
+  # paper + simulator: run even outside US hours
+  prefer_market_hours: false
+
+dashboard:
+  host: 127.0.0.1
+  port: 8787
+  require_auth: true
+
+alerts:
+  # ntfy is cloud push — off for local-only
+  enabled: false
+  drawdown_alert_pct: 0.05
+
+wallet:
+  backend: paper
+  assets: [USD, USDC, BTC, ETH]
+  starting_balances:
+    USD: 1000.0
+    USDC: 0.0
+    BTC: 0.0
+    ETH: 0.0
+  networks:
+    USD: ach-sim
+    USDC: ethereum
+    BTC: bitcoin
+    ETH: ethereum
+  min_send:
+    USD: 1.0
+    USDC: 1.0
+    BTC: 0.0001
+    ETH: 0.001
+  send_fee:
+    USD: 0.0
+    USDC: 0.0
+    BTC: 0.00001
+    ETH: 0.0002
+  max_daily_send_usd: 250.0
+  allowlist_required: true
+  allowlist_bootstrap: []
+  require_send_confirmation: true
+
+safety:
+  journal_enabled: true
+  audit_enabled: true

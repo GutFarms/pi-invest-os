@@ -1,0 +1,30 @@
+[Unit]
+Description=Pi Invest dashboard kiosk (Chromium fullscreen)
+After=pi-invest-dashboard.service network-online.target
+Wants=pi-invest-dashboard.service
+ConditionPathExists=/var/lib/pi-invest/firstboot-done
+# Skip when no GPU/display (headless SSH-only installs)
+ConditionPathExists=/dev/dri/card0
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+SupplementaryGroups=video render input
+PAMName=login
+TTYPath=/dev/tty7
+TTYReset=yes
+TTYVHangup=yes
+Environment=PYTHONUNBUFFERED=1
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+Environment=WLR_LIBINPUT_NO_DEVICES=0
+EnvironmentFile=-/opt/pi-invest-agent/.env
+ExecStartPre=+mkdir -p /run/user/1000
+ExecStartPre=+chown 1000:1000 /run/user/1000
+ExecStartPre=+chmod 700 /run/user/1000
+ExecStart=/usr/local/sbin/pi-invest-kiosk.sh
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

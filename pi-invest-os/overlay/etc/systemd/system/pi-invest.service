@@ -1,0 +1,19 @@
+[Unit]
+Description=Pi Invest Agent — local on-device income trader
+After=network-online.target pi-invest-firstboot.service ollama.service
+Wants=network-online.target ollama.service
+ConditionPathExists=/var/lib/pi-invest/firstboot-done
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/opt/pi-invest-agent
+Environment=PYTHONUNBUFFERED=1
+Environment=PI_INVEST_LOCAL_ONLY=true
+EnvironmentFile=-/opt/pi-invest-agent/.env
+ExecStart=/opt/pi-invest-agent/.venv/bin/pi-invest run
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target
